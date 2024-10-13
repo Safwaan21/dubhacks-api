@@ -3,28 +3,11 @@ from pydantic import BaseModel
 import uvicorn
 from joblib import load
 import numpy as np
+import logging
 
 app = FastAPI()
 
-# Define a Pydantic model for the incoming data
-# class DataModel(BaseModel):
-#     data: list[float]
-
-# @app.post("/sendData/")
-# async def send_data(data: DataModel):
-#     try:
-#         with open("posture_model.pkl", "rb") as f:
-#             loaded_model = load(f)
-
-#         # Access the 'data' field properly and reshape it
-#         input_data = np.array(data.data).reshape(1, -1)
-
-#         # Perform prediction
-#         res = loaded_model.predict(input_data)[0]
-
-#         return {"prediction": res}
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
+logger = logging.getLogger(__name__)
 
 @app.post("/sendData/")
 async def send_data(request: Request):
@@ -33,7 +16,15 @@ async def send_data(request: Request):
     """
     try:
         data = await request.json()  # Parse the incoming JSON request body
-        return data
+        logger.info(f"Received data: {data}")
+        # Print the type and check if it's a string or a dictionary
+
+        if type(data) == str:
+            return {"head": "String"}
+        else:
+            return {"head": data["head"].keys()}
+
+        return {"head": data["head"]}
         input_data = np.array(data["data"]).reshape(1, -1)
 
         with open("posture_model.pkl", "rb") as f:
