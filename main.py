@@ -33,7 +33,13 @@ async def send_data(request: Request):
     """
     try:
         data = await request.json()  # Parse the incoming JSON request body
-        return data
+        input_data = np.array(data["data"]).reshape(1, -1)
+
+        with open("posture_model.pkl", "rb") as f:
+            loaded_model = load(f)
+            res = loaded_model.predict(input_data)[0]
+
+        return {"prediction": res}
     except:
         raise HTTPException(status_code=400, detail="Invalid JSON data")
 
