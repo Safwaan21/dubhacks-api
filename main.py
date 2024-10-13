@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Any, Dict
+import logging 
 
 app = FastAPI()
 
@@ -13,5 +14,6 @@ async def send_data(body: RequestBody):
     """
     Accepts JSON input with a "data" field and returns the "head" data from it.
     """
-    print(body)
+    logging.debug(f"Received data: {body}")
+
     return {"check": body}
