@@ -1,20 +1,18 @@
+# main.py
 from fastapi import FastAPI, Depends, HTTPException, Request
-from sqlalchemy.orm import Session
-from .database import Base, engine, get_db
-from .models import RequestEntry
-from typing import Dict, Any
-
+import pickle
 app = FastAPI()
-Base.metadata.create_all(bind=engine)
 
 
 @app.post("/sendData/")
 async def send_data(request: Request):
+    loaded_model = pickle.load(open("posture_model.pkl", "rb"))
     """
     Accepts raw JSON input and returns the 'head' part of it.
     """
     try:
         data = await request.json()  # Parse the incoming JSON request body
-        return data["data"]
+        res = loaded_model.predict(data["data"])
+        return res
     except:
         raise HTTPException(status_code=400, detail="Invalid JSON data")
