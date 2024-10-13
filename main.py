@@ -1,19 +1,19 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from typing import Any, Dict
-import logging 
+from fastapi import FastAPI, Request, HTTPException
+from typing import Dict, Any
 
 app = FastAPI()
 
-# Define the expected structure of the incoming JSON
-class RequestBody(BaseModel):
-    data: Dict[str, Any]  # The body will contain a "data" field holding the object
-
 @app.post("/sendData/")
-async def send_data(body: RequestBody):
+async def send_data(request: Request):
     """
-    Accepts JSON input with a "data" field and returns the "head" data from it.
+    Accepts raw JSON input and returns the 'head' part of it.
     """
-    logging.debug(f"Received data: {body}")
+    try:
+        data = await request.json()  # Parse the incoming JSON request body
+        head_data = data.get("head")  # Extract the 'head' field from the JSON
+        if head_data is None:
+            raise HTTPException(status_code=400, detail="'head' not found in the data")
+        return head_data  # Return the 'head' part as response
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid JSON: {str(e)}")
 
-    return {"check": body}
