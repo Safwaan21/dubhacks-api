@@ -4,7 +4,7 @@ import pickle
 app = FastAPI()
 
 
-@app.post("/sendData/")
+@app.get("/sendData/")
 async def send_data(request: Request):
     loaded_model = pickle.load(open("posture_model.pkl", "rb"))
     """
