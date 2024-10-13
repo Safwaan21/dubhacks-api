@@ -13,7 +13,5 @@ async def send_data(body: RequestBody):
     """
     Accepts JSON input with a "data" field and returns the "head" data from it.
     """
-    head_data = body.data.get("head")
-    if head_data is None:
-        raise HTTPException(status_code=400, detail="'head' not found in data")
-    return head_data
+    print(body)
+    return {"check": body}
