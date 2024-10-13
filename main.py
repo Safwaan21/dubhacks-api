@@ -1,32 +1,29 @@
-# main.py
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI
 from pydantic import BaseModel
-from sqlalchemy.orm import Session
-from database import Base, engine, SessionLocal, Item
-
-# Create the database tables
-Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-# Dependency to get DB session
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+class Calculation(BaseModel):
+    operation: str
+    operands: list[float]
 
-# Pydantic model for request validation
-class ItemCreate(BaseModel):
-    name: str
-    description: str
-
-# POST endpoint to create an item
-@app.post("/items/", response_model=ItemCreate)
-def create_item(item: ItemCreate, db: Session = Depends(get_db)):
-    db_item = Item(name=item.name, description=item.description)
-    db.add(db_item)
-    db.commit()
-    db.refresh(db_item)
-    return db_item
+@app.post("/calculate/")
+def calculate(calc: Calculation):
+    if calc.operation == "add":
+        result = sum(calc.operands)
+    elif calc.operation == "subtract":
+        result = calc.operands[0] - sum(calc.operands[1:])
+    elif calc.operation == "multiply":
+        result = 1
+        for num in calc.operands:
+            result *= num
+    elif calc.operation == "divide":
+        result = calc.operands[0]
+        try:
+            for num in calc.operands[1:]:
+                result /= num
+        except ZeroDivisionError:
+            return {"error": "Division by zero is not allowed."}
+    else:
+        return {"error": "Unsupported operation."}
+    return {"result": result}
