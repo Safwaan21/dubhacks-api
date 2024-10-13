@@ -1,24 +1,22 @@
 # database.py
-from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
 
-# SQLite database
-DATABASE_URL = "sqlite:///./test.db"
+# Replace this with the PostgreSQL connection string from Render
+DATABASE_URL = "postgresql://training_dataset_user:bZPglDSW152r6G9kc6DL7MVso06bKEjV@dpg-cs5u793tq21c73dn9rm0-a/training_dataset"
 
-# Create engine
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-
-# Create a configured "Session" class
+# Set up the engine and session factory
+engine = create_engine(DATABASE_URL, pool_size=3, max_overflow=0)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Base class for models
 Base = declarative_base()
 
-# Example model
-class Item(Base):
-    __tablename__ = "items"
-
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
-    description = Column(String, index=True)
+# Dependency to get a DB session
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
